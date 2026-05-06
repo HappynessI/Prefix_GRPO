@@ -1,0 +1,160 @@
+hydra:
+  searchpath: []
+
+defaults:
+  - ppo_trainer
+  - _self_
+
+# Data configuration
+data:
+  train_files: null  # 通过命令行 --data.train_files 传入
+  val_files: null    # 通过命令行 --data.val_files 传入
+  max_prompt_length: 2048  # 第一轮任务描述的最大长度
+  max_response_length: 4096  # 整个episode所有轮次累积的response token总长度上限
+  train_batch_size: 64
+  val_batch_size: 4
+  filter_overlong_prompts: True
+  truncation: 'error'
+  return_raw_chat: True
+
+# Model and rollout configuration
+actor_rollout_ref:
+  hybrid_engine: True
+  
+  model:
+    use_remove_padding: True
+    enable_gradient_checkpointing: True
+    enable_activation_offload: True
+  
+  # Actor configuration
+  actor:
+    optim:
+      lr: 1e-6  # 降低学习率，减缓策略更新，降低clip_ratio
+    ppo_mini_batch_size: 64
+    ppo_micro_batch_size_per_gpu: 2
+    ppo_max_token_len_per_gpu: 12288  # prompt(2048) + response(4096) + buffer
+    clip_ratio: 0.2  # PPO clip范围，默认0.2
+    use_kl_loss: False  # 主实验不使用 KL / reference 约束
+    kl_loss_coef: 0.001
+    kl_loss_type: low_var_kl
+    entropy_coeff: 0
+    fsdp_config:
+      param_offload: True
+      optimizer_offload: False
+      model_dtype: bfloat16
+
+  # Rollout configuration（参考AgentGym-RL配置）
+  rollout:
+    name: vllm  # 使用vLLM（更成熟稳定）
+    temperature: 0.7  # 训练时的采样温度
+    top_p: 0.9
+    top_k: -1  # vLLM: -1表示不限制
+    prompt_length: 4096  # 最大prompt长度（包含多轮历史）
+    response_length: 4096  # 整个episode累积response长度上限
+    
+    # vLLM特定参数
+    gpu_memory_utilization: 0.6  # vLLM内存占用稍高，降低到0.6
+    tensor_model_parallel_size: 1
+    max_model_len: 10240  # prompt_length + response_length的上限
+    max_num_batched_tokens: 10240
+    max_num_seqs: 256
+    enforce_eager: True
+    free_cache_engine: True
+    disable_log_stats: True
+    
+    n: 4  # 每个prompt采样4次
+    log_prob_micro_batch_size_per_gpu: 2
+    log_prob_max_token_len_per_gpu: 12288
+    
+    # Validation采样参数
+    val_kwargs:
+      temperature: 0.3  # 与eval对齐
+      top_p: 0.9
+      do_sample: true
+      n: 1
+      max_tokens: 512  
+    
+    # Multi-turn with interaction
+    multi_turn:
+      enable: True
+      max_user_turns: 25  
+      max_assistant_turns: 25
+      interaction_config_path: null  # 通过命令行传入
+    
+    # Agent configuration
+    agent:
+      default_agent_loop: tool_agent
+      num_workers: 1  # smoke test: reduced to 1
+
+  # Reference model configuration
+  ref:
+    log_prob_micro_batch_size_per_gpu: 2
+    log_prob_max_token_len_per_gpu: 6144
+    fsdp_config:
+      param_offload: False
+      model_dtype: bfloat16
+
+# Algorithm configuration
+algorithm:
+  adv_estimator: grpo
+  use_kl_in_reward: False
+
+  # Prefix optimization: 主实验开关
+  # - optimize_prefix_tokens: false (baseline) - 只优化 continuation
+  # - optimize_prefix_tokens: true (主实验) - 同时优化 prefix (使用 cached SFT old_logprob)
+  optimize_prefix_tokens: False
+  # Weight for prefix loss when optimize_prefix_tokens is True
+  prefix_loss_weight: 1.0
+  # Prefix PPO objective mode: split / joint
+  prefix_loss_mode: split
+  # Prefix advantage mode:
+  # - cont_mean: continuation mean advantage
+  # - cont_mean_abs: absolute continuation mean advantage
+  # - cont_mean_pos: positive-part continuation mean advantage
+  # - constant: fixed positive scalar for every replayable prefix
+  # - success_gate_constant: constant scalar only when seq_level_rewards > 0
+  # - family_lift*: compare prefix success rate against raw success rate within sample_uid family
+  prefix_advantage_mode: constant
+  # Constant prefix advantage used when prefix_advantage_mode == constant
+  prefix_advantage_constant: 1.0
+  prefix_cont_adv_weight: 1.0
+  prefix_family_lift_weight: 1.0
+  prefix_family_lift_clip: 1.0
+
+  # Optional TextCraft teacher-trajectory auxiliary BC on continuation assistant actions.
+  use_textcraft_bc_aux: false
+  textcraft_bc_weight: 0.0
+  textcraft_bc_source: prefix
+  textcraft_bc_max_length: null
+
+  # Optional logged teacher-demo training path.
+  # Demo rows are skipped by online rollout and reinserted as fixed SFT-oldlogprob
+  # trajectories with demo_adv=clamp(demo_reward - raw_mean, 0, 1).
+  use_textcraft_teacher_demo: false
+  textcraft_teacher_demo_weight: 1.0
+  textcraft_teacher_demo_labels: [teacher_demo, demo]
+  textcraft_teacher_demo_repeat_to_rollout_n: true
+  textcraft_teacher_demo_skip_overlong: false
+
+# Trainer configuration
+trainer:
+  n_gpus_per_node: 4
+  nnodes: 1
+  device: cuda
+  critic_warmup: 0
+  logger: [console, wandb]
+  project_name: textcraft_grpo
+  experiment_name: qwen3-1.7b_textcraft_grpo
+  entity: null
+  total_epochs: 10
+  save_freq: 50
+  test_freq: 5
+  default_local_dir: null  # 通过命令行 --trainer.default_local_dir 传入
+
+# Critic disabled for GRPO
+critic:
+  enable: False
+
+# Reward model disabled
+reward_model:
+  enable: False

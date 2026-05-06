@@ -1,0 +1,21 @@
+# AlfWorld 环境服务运行时依赖（离线安装用）
+# 不包含训练框架依赖，仅供 Pod 内 alfworld 服务使用。
+# 使用 pip download 打包后，通过 pip install --no-index --find-links= 安装。
+
+# 注意：alfworld==0.3.3 依赖较重，建议单独 wheel 目录。
+# 另外 alfworld-download 命令需要网络来下载游戏数据，
+# 建议预先在开发机下载好 $HOME/.cache/alfworld 目录，
+# 然后通过 volume mount 或 oss-sync 的方式挂载到 Pod 内。
+
+# FastAPI + uvicorn：环境服务 HTTP API
+fastapi
+uvicorn[standard]
+
+# gym：ALFWorld 底层环境
+gym
+
+# opencv-headless：ALFWorld 可视化/图像处理（无 GUI 版）
+opencv-python-headless
+
+# alfworld：ALFWorld 任务环境（包含游戏引擎）
+alfworld==0.3.3

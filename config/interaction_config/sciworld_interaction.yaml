@@ -1,0 +1,16 @@
+# SciWorld Interaction Configuration
+# SciWorld 环境交互配置（科学实验环境）
+
+interaction:
+  - name: sciworld
+    class_name: verl.interactions.sciworld_interaction.SciWorldInteraction
+    config:
+      # SciWorld 环境服务器地址
+      # 必须与 config_h200.sh 中 SCIWORLD_PORT=36003 保持一致
+      env_server_base: "http://127.0.0.1:36003"
+
+      # 请求超时（秒）
+      timeout: 600
+
+      # 最大重试次数
+      max_retries: 3

@@ -1,9 +1,0 @@
-{
-  "input_parquet": "/Data/wyh/datasets/Verl-Data/train/textcraft/new_prefix_rl/stage0_teacher/teacher_normalized.parquet",
-  "output_parquet": "/Data/wyh/datasets/Verl-Data/train/textcraft/new_prefix_rl/stage2_splits/prefix_candidates_fixed_ratio_0p4.parquet",
-  "target_ratio": 0.4,
-  "rows": 1496,
-  "unique_sample_uid": 1496,
-  "empty_prefix_actions": 1,
-  "with_continuation": 1496
-}

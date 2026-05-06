@@ -1,0 +1,24 @@
+# AlfWorld Interaction Configuration
+# AlfWorld 环境交互配置（ALFWorld 任务环境）
+
+interaction:
+  - name: alfworld
+    class_name: verl.interactions.alfworld_interaction.ALFWorldInteraction
+    config:
+      # AlfWorld 环境服务器地址
+      # 必须与 config_h200.sh 中 ALFWORLD_PORT=36004 保持一致
+      env_server_base: "http://127.0.0.1:36004"
+
+      # 请求超时（秒）
+      timeout: 600
+
+      # 最大重试次数
+      max_retries: 3
+
+      # ALFWorld server 默认每进程只保留少量 active env；满载时等待可用 slot。
+      create_retry_timeout: 600
+      create_retry_backoff: 0.5
+
+      # 训练时由 run_alfworld_grpo_train.sh 按 server 池大小和 agent-loop worker 数重写。
+      # 这里的单 server 默认值避免 client 侧同时打爆 /create。
+      client_max_active_envs: 1

@@ -1,0 +1,116 @@
+hydra:
+  searchpath: []
+
+defaults:
+  - ppo_trainer
+  - _self_
+
+# Data configuration
+data:
+  train_files: null  # 通过命令行传入
+  val_files: null    # 通过命令行传入
+  max_prompt_length: 1024
+  max_response_length: 2048  # 累积response长度，需要足够大支持多轮交互
+  train_batch_size: 128  # 4xL20比8xH100小，减小batch size
+  val_batch_size: 8
+  filter_overlong_prompts: True
+  truncation: 'error'
+  return_raw_chat: True
+
+# Model and rollout configuration
+actor_rollout_ref:
+  hybrid_engine: True
+  
+  model:
+    # path会通过命令行传入
+    use_remove_padding: True
+    enable_gradient_checkpointing: True
+    enable_activation_offload: True  # 激活值offload，节省显存（修正字段名）
+  
+  # Actor configuration (policy model for training)
+  actor:
+    optim:
+      lr: 5e-7  # 用户指定学习率
+    ppo_mini_batch_size: 128  # 和train_batch_size一致
+    ppo_micro_batch_size_per_gpu: 2  # L20显存较小，每卡micro batch小一些
+    ppo_max_token_len_per_gpu: 2560  # prompt(512) + response(2048)
+    use_kl_loss: True
+    kl_loss_coef: 0.001
+    kl_loss_type: low_var_kl
+    entropy_coeff: 0
+    fsdp_config:
+      param_offload: False  # 禁用offload避免RAM OOM
+      optimizer_offload: False  # 禁用offload避免RAM OOM
+      model_dtype: bfloat16
+
+  # Rollout configuration (inference with SGLang)
+  rollout:
+    name: vllm  # 使用 vLLM（推荐镜像已包含）
+    temperature: 0.3  # 降低温度避免冗长输出
+    top_p: 0.95
+    prompt_length: 2048  # 足够包含instruction + observation
+    response_length: 2048  # 累积长度上限，需要足够大支持多轮交互
+    gpu_memory_utilization: 0.85  # 既然禁用了CPU offload，充分利用GPU显存
+    tensor_model_parallel_size: 1  # 单GPU推理，让verl框架处理并行
+    data_parallel_size: 1  # 禁用SGLang的data parallel，避免端口冲突
+    free_cache_engine: True
+    skip_tokenizer_init: False
+    n: 4  # 每个prompt采样4次 (比8xH100的n=8小)
+    log_prob_micro_batch_size_per_gpu: 2
+    log_prob_max_token_len_per_gpu: 2560  # prompt(512) + response(2048)
+    
+    # Validation sampling parameters
+    val_kwargs:
+      temperature: 0.3
+      top_p: 0.95
+      do_sample: true
+      n: 1
+    
+    # Multi-turn with interaction
+    multi_turn:
+      enable: True
+      max_user_turns: 25  # Webshop max interaction rounds
+      max_assistant_turns: 25
+      interaction_config_path: null  # 通过命令行传入
+    
+    # Agent configuration
+    agent:
+      default_agent_loop: tool_agent  # 使用tool_agent_loop
+      num_workers: 4
+
+  # Reference model configuration (for KL divergence)
+  ref:
+    log_prob_micro_batch_size_per_gpu: 2
+    log_prob_max_token_len_per_gpu: 2560  # prompt(512) + response(2048)
+    fsdp_config:
+      param_offload: False  # 禁用offload避免RAM OOM
+      model_dtype: bfloat16
+
+# Algorithm configuration
+algorithm:
+  adv_estimator: grpo  # 使用GRPO算法
+  use_kl_in_reward: False  # GRPO不在reward中使用KL
+
+# Trainer configuration
+trainer:
+  n_gpus_per_node: 4  # 4xL20
+  nnodes: 1
+  device: cuda
+  critic_warmup: 0  # GRPO不需要critic warmup
+  logger: [console, wandb]  # 同时输出到console和wandb
+  project_name: webshop_grpo
+  experiment_name: qwen3-8b_webshop_grpo
+  entity: null  # wandb团队名称，如果个人账号可以为null
+  total_epochs: 15
+  save_freq: 5  # 每5个epoch保存一次checkpoint
+  test_freq: 3  # 每3个epoch验证一次
+  default_local_dir: null  # 通过命令行传入
+
+# Critic disabled for GRPO
+critic:
+  enable: False
+
+# Reward model disabled (使用环境reward)
+reward_model:
+  enable: False
+

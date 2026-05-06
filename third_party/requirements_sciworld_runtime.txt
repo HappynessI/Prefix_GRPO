@@ -1,0 +1,10 @@
+# SciWorld 环境服务运行时依赖（离线安装用）
+# 不包含训练框架依赖，仅供 Pod 内 sciworld 服务使用。
+# 使用 pip download 打包后，通过 pip install --no-index --find-links= 安装。
+
+# FastAPI + uvicorn：环境服务 HTTP API
+fastapi
+uvicorn[standard]
+
+# scienceworld：SciWorld 任务环境
+scienceworld

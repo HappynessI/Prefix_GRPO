@@ -1,0 +1,17 @@
+# DEPRECATED: 此文件已弃用
+# ============================================================
+# 请使用 verl/requirements.txt 和 verl/requirements_sglang.txt 代替
+# ============================================================
+#
+# 原因：
+#   - verl_requirements.txt 包含本地 file:// 依赖，无法在新服务器上使用
+#   - 请参考 README 中的推荐安装方式
+#
+# 推荐安装方式：
+#   1. 创建 conda 环境
+#   2. pip install -r verl/requirements.txt
+#   3. pip install -r verl/requirements_sglang.txt
+#   4. pip install -e verl/
+#   5. pip install -e envs/AgentGym/agentenv-*/
+#
+# ============================================================

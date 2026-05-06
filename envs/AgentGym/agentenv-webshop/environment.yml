@@ -1,0 +1,8 @@
+name: agentenv-webshop
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - faiss-cpu=1.7
+  - openjdk=11

@@ -1,0 +1,22 @@
+[project]
+name = "agentenv_webshop"
+version = "0.0.1"
+description = ""
+authors = [
+    {name = "KYLN24", email = "hlguo20@fudan.edu.cn"},
+]
+dependencies = [
+    "fastapi==0.103.2",
+    "uvicorn[standard]",
+    "python-Levenshtein"
+]
+requires-python = ">=3.8,<3.9"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project.scripts]
+webshop = "agentenv_webshop:launch"

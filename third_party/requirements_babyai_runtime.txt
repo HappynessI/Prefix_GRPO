@@ -1,0 +1,17 @@
+# BabyAI 环境服务运行时依赖（离线安装用）
+# 不包含训练框架依赖，仅供 Pod 内 babyai 服务使用。
+# 使用 pip download 打包后，通过 pip install --no-index --find-links= 安装。
+
+# FastAPI + uvicorn：环境服务 HTTP API
+fastapi
+uvicorn[standard]
+
+# gym + gymnasium：BabyAI 底层环境框架
+gym
+gymnasium<1.0.0
+
+# matplotlib：BabyAI 可视化（可选，但建议保留）
+matplotlib
+
+# minigrid：BabyAI 任务环境核心包
+minigrid<2.5.0

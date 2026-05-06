@@ -42,42 +42,42 @@ async def create(body: CreateRequestBody):
 
 
 @app.post("/step")
-def step(body: StepRequestBody):
+async def step(body: StepRequestBody):
     if _should_log("step"):
         print(f"/step [{_request_log_counts['step']}] {body.id} {body.action}")
     return server.step(body.id, body.action)
 
 
 @app.post("/reset")
-def reset(body: ResetRequestBody):
+async def reset(body: ResetRequestBody):
     if _should_log("reset"):
         print(f"/reset [{_request_log_counts['reset']}] {body.id} {body.data_idx}")
     return server.reset(body.id, body.data_idx)
 
 
 @app.get("/observation")
-def get_observation(id: int):
+async def get_observation(id: int):
     if _should_log("observation"):
         print(f"/observation [{_request_log_counts['observation']}] {id}")
     return server.get_observation(id)
 
 
 @app.get("/commands")
-def get_commands(id: int):
+async def get_commands(id: int):
     return server.get_commands(id)
 
 
 @app.get("/goal")
-def get_goal(id: int):
+async def get_goal(id: int):
     return server.get_goal(id)
 
 
 @app.get("/detail")
-def get_detailed_info(id: int):
+async def get_detailed_info(id: int):
     return server.get_detailed_info(id)
 
 @app.post("/close")
-def close(body: CloseRequestBody):
+async def close(body: CloseRequestBody):
     if _should_log("close"):
         print(f"/close [{_request_log_counts['close']}] {body.id}")
     return server.close(body.id)

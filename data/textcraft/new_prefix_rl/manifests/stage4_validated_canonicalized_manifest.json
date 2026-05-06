@@ -1,7 +1,0 @@
-{
-  "input_path": "/Data/wyh/datasets/Verl-Data/train/textcraft/new_prefix_rl/stage3_replay_validation/fixed_ratio_0p4_validated.parquet",
-  "output_path": "/Data/wyh/datasets/Verl-Data/train/textcraft/new_prefix_rl/stage4_canonicalized/fixed_ratio_0p4_validated_canonicalized.parquet",
-  "rows": 1020,
-  "unique_sample_uid": 1020,
-  "reference_train_parquet": "/Data/wyh/datasets/Verl-Data/train/textcraft/train.parquet"
-}

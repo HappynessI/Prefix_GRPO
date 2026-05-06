@@ -1,0 +1,122 @@
+hydra:
+  searchpath: []
+
+defaults:
+  - ppo_trainer
+  - _self_
+
+# Data configuration
+data:
+  train_files: null
+  val_files: null
+  max_prompt_length: 1024
+  max_response_length: 8192
+  train_batch_size: 16
+  val_batch_size: 4
+  filter_overlong_prompts: True
+  truncation: 'error'
+  return_raw_chat: True
+
+# Model and rollout configuration
+actor_rollout_ref:
+  hybrid_engine: True
+
+  model:
+    use_remove_padding: True
+    enable_gradient_checkpointing: False
+    enable_activation_offload: False
+
+  # Actor configuration
+  actor:
+    optim:
+      lr: 5e-6
+    ppo_mini_batch_size: 16
+    ppo_micro_batch_size_per_gpu: 16
+    ppo_max_token_len_per_gpu: 12288
+    ppo_epochs: 2
+    clip_ratio: 0.2
+    use_kl_loss: True
+    kl_loss_coef: 0.001
+    kl_loss_type: low_var_kl
+    entropy_coeff: 0.01
+    fsdp_config:
+      param_offload: False
+      optimizer_offload: False
+      model_dtype: bfloat16
+
+  # Rollout configuration
+  rollout:
+    name: vllm
+    temperature: 1.0
+    top_p: 1.0
+    top_k: -1
+    prompt_length: 4096
+    response_length: 8192
+    max_tokens: 512
+    gpu_memory_utilization: 0.80
+    tensor_model_parallel_size: 1
+    max_model_len: 12288
+    max_num_batched_tokens: 8192
+    max_num_seqs: 256
+    enforce_eager: True
+    free_cache_engine: True
+    disable_log_stats: True
+
+    n: 8
+    log_prob_micro_batch_size_per_gpu: 16
+    log_prob_max_token_len_per_gpu: 12288
+
+    # Validation sampling parameters
+    val_kwargs:
+      temperature: 1.0
+      top_p: 1.0
+      do_sample: false
+      n: 1
+
+    # Multi-turn with interaction
+    multi_turn:
+      enable: True
+      max_user_turns: 30
+      max_assistant_turns: 30
+      interaction_config_path: null
+
+    # Agent configuration
+    agent:
+      default_agent_loop: tool_agent
+      num_workers: 2
+
+  # Reference model configuration
+  ref:
+    log_prob_micro_batch_size_per_gpu: 16
+    log_prob_max_token_len_per_gpu: 6144
+    fsdp_config:
+      param_offload: False
+      model_dtype: bfloat16
+
+# Algorithm configuration
+algorithm:
+  adv_estimator: grpo
+  use_kl_in_reward: False
+
+# Trainer configuration
+trainer:
+  n_gpus_per_node: 2
+  nnodes: 1
+  device: cuda
+  critic_warmup: 0
+  logger: [console, wandb]
+  project_name: sciworld_grpo
+  experiment_name: qwen3-1.7b_sciworld_grpo
+  entity: null
+  total_epochs: 10
+  save_freq: 500
+  test_freq: 500
+  default_local_dir: null
+
+# Critic disabled for GRPO
+critic:
+  enable: False
+
+# Reward model disabled
+reward_model:
+  enable: False

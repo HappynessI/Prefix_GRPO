@@ -1,0 +1,144 @@
+hydra:
+  searchpath: []
+
+defaults:
+  - ppo_trainer
+  - _self_
+
+# Data configuration
+data:
+  train_files: null
+  val_files: null
+  max_prompt_length: 1024
+  max_response_length: 4096
+  train_batch_size: 16
+  val_batch_size: 4
+  filter_overlong_prompts: True
+  truncation: 'error'
+  return_raw_chat: True
+
+# Model and rollout configuration
+actor_rollout_ref:
+  hybrid_engine: True
+
+  model:
+    use_remove_padding: True
+    enable_gradient_checkpointing: True
+    enable_activation_offload: False
+
+  # Actor configuration
+  actor:
+    optim:
+      lr: 5e-6
+    ppo_mini_batch_size: 16
+    ppo_micro_batch_size_per_gpu: 16
+    ppo_max_token_len_per_gpu: 12288
+    clip_ratio: 0.2
+    use_kl_loss: False
+    kl_loss_coef: 0.001
+    kl_loss_type: low_var_kl
+    entropy_coeff: 0
+    fsdp_config:
+      param_offload: True
+      optimizer_offload: False
+      model_dtype: bfloat16
+
+  # Rollout configuration
+  rollout:
+    name: vllm
+    temperature: 1.0
+    top_p: 0.95
+    top_k: -1
+    prompt_length: 8192
+    response_length: 4096
+    gpu_memory_utilization: 0.80
+    tensor_model_parallel_size: 1
+    max_model_len: 12288
+    max_num_batched_tokens: 12288
+    max_num_seqs: 256
+    enforce_eager: True
+    free_cache_engine: True
+    disable_log_stats: True
+
+    n: 8
+    log_prob_micro_batch_size_per_gpu: 16
+    log_prob_max_token_len_per_gpu: 12288
+
+    # Validation sampling parameters
+    val_kwargs:
+      temperature: 1.0
+      top_p: 1.0
+      do_sample: false
+      n: 1
+
+    # Multi-turn with interaction
+    multi_turn:
+      enable: True
+      max_user_turns: 21
+      max_assistant_turns: 20
+      interaction_config_path: null
+
+    # Agent configuration
+    agent:
+      default_agent_loop: tool_agent
+      num_workers: 2
+
+  # Reference model configuration
+  ref:
+    log_prob_micro_batch_size_per_gpu: 16
+    log_prob_max_token_len_per_gpu: 12288
+    fsdp_config:
+      param_offload: False
+      model_dtype: bfloat16
+
+# Algorithm configuration
+algorithm:
+  adv_estimator: grpo
+  use_kl_in_reward: False
+
+  # Prefix replay / Prefix-GRPO hooks are available for ALFWorld and disabled by default.
+  # PREFIX_REPLAY_ONLY=true in the launcher uses replayed prefix actions while keeping this false.
+  optimize_prefix_tokens: False
+  prefix_loss_weight: 1.0
+  prefix_loss_mode: split
+  prefix_advantage_mode: cont_mean_abs
+  prefix_advantage_constant: 1.0
+  prefix_cont_adv_weight: 1.0
+  prefix_family_lift_weight: 1.0
+  prefix_family_lift_clip: 1.0
+
+  # Generic auxiliary BC on logged continuation assistant actions.
+  use_bc_aux: false
+  bc_weight: 0.0
+  bc_source: prefix
+  bc_max_length: null
+
+  # Generic logged teacher-demo trajectories.
+  use_teacher_demo: false
+  teacher_demo_weight: 1.0
+  teacher_demo_labels: [teacher_demo, demo]
+  teacher_demo_repeat_to_rollout_n: true
+  teacher_demo_skip_overlong: false
+
+# Trainer configuration
+trainer:
+  n_gpus_per_node: 4
+  nnodes: 1
+  device: cuda
+  critic_warmup: 0
+  logger: [console, wandb]
+  project_name: alfworld_grpo
+  experiment_name: qwen3-1.7b_alfworld_grpo
+  entity: null
+  total_epochs: 50
+  save_freq: 50
+  test_freq: 10
+  default_local_dir: null
+
+# Critic disabled for GRPO
+critic:
+  enable: False
+
+# Reward model disabled
+reward_model:
+  enable: False

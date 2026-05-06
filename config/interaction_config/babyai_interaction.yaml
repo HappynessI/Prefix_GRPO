@@ -1,0 +1,17 @@
+# BabyAI Interaction Configuration
+# BabyAI环境交互配置
+
+interaction:
+  - name: babyai
+    class_name: verl.interactions.babyai_interaction.BabyAIInteraction
+    config:
+      # BabyAI环境服务器地址
+      # 端口必须在 config_a100.sh 中与 BABYAI_PORT 一致
+      env_server_base: "http://127.0.0.1:36002"
+      
+      # 请求超时（秒）
+      timeout: 600
+      
+      # 最大重试次数
+      max_retries: 3
+
