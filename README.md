@@ -228,7 +228,7 @@ Prefix_GRPO/
 | --- | --- |
 | TextCraft | Main dataset, ablation datasets, training metrics |
 | BabyAI | Main dataset, ablation datasets, training metrics |
-| ALFWorld | Main dataset; Prefix-GRPO main training metrics pending |
+| ALFWorld | Main dataset; partial Prefix-GRPO main training metrics |
 | SciWorld | Environment wrapper included; not part of the Prefix-GRPO artifact tables |
 | WebShop | Wrapper included; not part of the Prefix-GRPO artifact tables |
 

@@ -44,3 +44,12 @@
 - Added `data/SCHEMA.md` and `data/SCHEMA_COLUMNS.csv` to document the parquet
   schema and Prefix-GRPO sidecar fields.
 - Added README setup guidance for Git LFS and tested dependency versions.
+
+## 2026-05-07 ALFWorld Partial Prefix-GRPO Metrics
+
+- Added merged partial ALFWorld Prefix-GRPO metrics under
+  `results/training/alfworld/prefix_grpo/`.
+- The available segments cover steps 1-501 and 1001-1120; steps 502-1000 are
+  not included.
+- Regenerated `results/training_metrics_index.csv` and
+  `results/paper_metrics.csv`.

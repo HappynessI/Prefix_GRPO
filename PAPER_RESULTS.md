@@ -17,7 +17,7 @@ diagnostics used to verify that Prefix-GRPO is active.
 | --- | --- | --- | --- |
 | TextCraft | `data/textcraft/main/main_change_top3_w11_fullflow.parquet` | `results/training/textcraft/training_metrics_main-change-top3.csv` | available |
 | BabyAI | `data/babyai/main/main_change_top3_w11_fullflow.parquet` | `results/training/babyai/prefix_grpo/training_metrics_prefix_grpo.csv` | available |
-| ALFWorld | `data/alfworld/main/main_change_top3_w11_fullflow.parquet` | pending | pending |
+| ALFWorld | `data/alfworld/main/main_change_top3_w11_fullflow.parquet` | `results/training/alfworld/prefix_grpo/training_metrics_prefix_grpo_merged_partial.csv` | partial |
 
 ## Ablations
 
@@ -42,3 +42,14 @@ results/training/textcraft/training_metrics_prefix_grpo_w5.csv
 ```
 
 The current manuscript does not report w5 or w7 window ablation results.
+
+## Partial Metrics
+
+ALFWorld main Prefix-GRPO metrics are currently partial. The merged file:
+
+```text
+results/training/alfworld/prefix_grpo/training_metrics_prefix_grpo_merged_partial.csv
+```
+
+contains the provided segments for steps 1-501 and 1001-1120. Steps 502-1000
+are not included in the current artifact.

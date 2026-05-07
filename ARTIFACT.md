@@ -121,8 +121,9 @@ from teacher trajectories and SFT old-log-probability computation.
 
 - TextCraft is the primary environment for the main paper setting.
 - BabyAI includes both main and ablation Prefix-GRPO datasets and metrics.
-- ALFWorld includes the main Prefix-GRPO dataset. The main Prefix-GRPO training
-  metrics are still pending and should be added before final artifact release.
+- ALFWorld includes the main Prefix-GRPO dataset and a partial merged
+  Prefix-GRPO metric file. The available metric segments cover steps 1-501 and
+  1001-1120; steps 502-1000 are not included in the current artifact.
 - SciWorld and WebShop wrappers are kept because they are part of the inherited
   environment stack, but they are not part of the included Prefix-GRPO artifact
   table.
