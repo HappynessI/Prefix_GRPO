@@ -58,6 +58,7 @@ Ray: 2.52.x
 Pandas: 2.3.x
 PyArrow: 22.x
 Hydra: 1.3.x
+Matplotlib: 3.10.x
 ```
 
 Install the core Python dependencies from the repository manifests:
@@ -171,6 +172,10 @@ Training metric inventory:
 results/training_metrics_index.csv
 results/paper_metrics.csv
 ```
+
+Main experiment reward curves:
+
+![Main experiment training reward curves](results/figures/main_reward_curves.png)
 
 Raw training CSVs are stored under `results/training/`.
 

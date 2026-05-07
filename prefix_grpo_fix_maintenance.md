@@ -64,3 +64,12 @@
   raw local logs remain excluded from the public artifact.
 - Regenerated `results/training_metrics_index.csv` and
   `results/paper_metrics.csv`.
+
+## 2026-05-07 Main Reward Curve Figure
+
+- Added `scripts/utils/plot_main_reward_curves.py` to plot the three
+  paper-main training reward curves from `results/paper_metrics.csv`.
+- Added `results/figures/main_reward_curves.png` and referenced it from
+  `README.md`.
+- Added the matplotlib version used for reproducing the figure to the README
+  dependency list.
